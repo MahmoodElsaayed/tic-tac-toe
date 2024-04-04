@@ -32,3 +32,19 @@ function Gameboard() {
         printBoard,
     }
 }
+
+function Cell() {
+    let value = "-";
+
+    const getValue = () => value;
+    const setValue = (token) => {
+        if (value === "-") {
+            value = token;
+        }
+    };
+
+    return {
+        getValue,
+        setValue,
+    }
+} 
