@@ -53,3 +53,70 @@ function Cell() {
         setValue,
     }
 }
+
+function GameController(playerOneName = "", playerTwoName = "") {
+    const gameboard = Gameboard();
+    const board = gameboard.getBoard();
+    const players = [
+        { name: (playerOneName || `Player X`), token: "X" },
+        { name: (playerTwoName || `Player O`), token: "O" },
+    ]
+    let currentPlayer = players[0];
+
+    const switchTurns = () => {
+        currentPlayer = (currentPlayer.name === players[0].name) ? players[1] : players[0];
+    }
+
+    const checkForGameEnd = () => {
+        let gameEnded = false;
+
+        const winningPatterns = [
+            [0, 1, 2],
+            [3, 4, 5],
+            [6, 7, 8],
+            [0, 3, 6],
+            [1, 4, 7],
+            [2, 5, 8],
+            [0, 4, 8],
+            [2, 4, 6],
+        ]
+
+        const currentPlayerTokens = board.reduce((array, cell, index) => {
+            if (cell.getValue() === currentPlayer.token) array.push(index);
+            return array;
+        }, [])
+
+        winningPatterns.forEach(pattern => {
+            if (pattern.every(element => currentPlayerTokens.includes(element))) {
+                console.log(`${currentPlayer.name} has won`);
+                gameEnded = true;
+            }
+        })
+
+        if (!gameboard.getAvailableCells().length) {
+            console.log("It's a draw!");
+            gameEnded = true;
+        }
+
+        return gameEnded;
+    }
+
+    const startRound = (pos) => {
+        if (board[pos].getValue() !== "-") {
+            console.log("Position is occupied. Try another position.");
+            return;
+        }
+        gameboard.insertToken(pos, currentPlayer.token);
+        gameboard.printBoard();
+        if (checkForGameEnd()) {
+            gameboard.resetBoard();
+        };
+        switchTurns();
+    }
+
+    return {
+        startRound,
+    }
+}
+
+const game = GameController("Mahmoud", "John");
