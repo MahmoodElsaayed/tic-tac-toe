@@ -15,6 +15,12 @@ function Gameboard() {
         }, [])
     }
 
+    const resetBoard = () => {
+        for (let i = 0; i < board.length; i++) {
+            board[i].setValue("-");
+        }
+    }
+
     const printBoard = () => {
         const boardRows = [board.slice(0, 3), board.slice(3, 6), board.slice(6)];
         boardRows.forEach((row, rowIndex) => {
@@ -29,6 +35,7 @@ function Gameboard() {
         getBoard,
         insertToken,
         getAvailableCells,
+        resetBoard,
         printBoard,
     }
 }
@@ -38,13 +45,11 @@ function Cell() {
 
     const getValue = () => value;
     const setValue = (token) => {
-        if (value === "-") {
-            value = token;
-        }
+        value = token;
     };
 
     return {
         getValue,
         setValue,
     }
-} 
+}
