@@ -44,7 +44,7 @@ const TicTacToeGame = (function () {
         }
     }
 
-    function GameController(Cell, Gameboard, playerOneName, playerTwoName) {
+    function GameController(Cell, Gameboard, playerOneName="", playerTwoName="") {
         const gameboard = Gameboard(Cell);
         const players = [
             { name: (playerOneName || `Player X`), token: "X" },
@@ -101,11 +101,5 @@ const TicTacToeGame = (function () {
         }
     }
 
-    function initializeGame(playerOneName, playerTwoName) {
-        return GameController(Cell, Gameboard, playerOneName, playerTwoName);
-    }
-
-    return initializeGame;
+    return GameController(Cell, Gameboard);
 })();
-
-const game = TicTacToeGame("John", "Joana");
