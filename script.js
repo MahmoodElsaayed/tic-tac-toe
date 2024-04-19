@@ -96,10 +96,53 @@ const TicTacToeGame = (function () {
             switchTurns();
         }
 
+        const getGameState = () => {
+            return {
+                currentPlayer,
+                board: gameboard.getBoard(),
+                gameStatus: getGameStatus(),
+            }
+        }
+
         return {
             playTurn,
+            getGameState,
+            resetBoard: gameboard.resetBoard,
         }
     }
 
-    return GameController(Cell, Gameboard);
+    function ScreenController(Cell, Gameboard, GameController) {
+        const outputPara = document.getElementById("output-para");
+        const boardDiv = document.getElementById("gameboard");
+        const resetBtn = document.getElementById("reset-btn");
+        const gameController = GameController(Cell, Gameboard);
+
+        const updateScreen = () => {
+            const gameState = gameController.getGameState();
+            outputPara.textContent = gameState.gameStatus || `${gameState.currentPlayer.name}'s Turn`;
+            gameState.board.forEach((cell, index) => {
+                document.querySelector(`#gameboard button[data-index="${index}"]`).textContent = cell.getValue() || "";
+            })
+        }
+
+        function boardClickHandler(event) {
+            const selectedCellIndex = +event.target.dataset.index;
+            if ((selectedCellIndex >= 0 && selectedCellIndex <= 8) && !gameController.getGameState().gameStatus) { // execute if is a valid cell is clicked & game is still ongoing
+                gameController.playTurn(selectedCellIndex);
+                updateScreen();
+            }
+        }
+
+        function resetBtnClickHandler(event) {
+            gameController.resetBoard();
+            updateScreen();
+        }
+
+        boardDiv.addEventListener("click", boardClickHandler);
+        resetBtn.addEventListener("click", resetBtnClickHandler);
+
+        updateScreen(); // Initial render
+    }
+
+    return ScreenController(Cell, Gameboard, GameController);
 })();
