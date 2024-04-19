@@ -77,12 +77,12 @@ const TicTacToeGame = (function () {
 
             winningPatterns.forEach(pattern => {
                 if (pattern.every(element => currentPlayerTokens.includes(element))) {
-                    gameStatus = `${currentPlayer.name} has won`;
+                    gameStatus = `${currentPlayer.name} has won!`;
                 }
             })
 
-            if (!gameboard.getAvailableCells().length) {
-                gameStatus = `It's a draw`;
+            if (!gameboard.getAvailableCells().length && !gameStatus) {
+                gameStatus = `It's a draw!`;
             }
 
             return gameStatus;
