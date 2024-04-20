@@ -1,51 +1,46 @@
 const TicTacToeGame = (function () {
-    function Gameboard(Cell) {
+    function BoardController(Cell) {
         const board = [];
-        for (let i = 0; i < 9; i++) { board.push(Cell()) };
+        const availableCells = [];
+
+        for (let i = 0; i < 9; i++) {
+            board.push(Cell());
+            availableCells.push(i);
+        };
 
         const getBoard = () => board;
 
+        const getAvailableCells = () => availableCells;
+
         const insertToken = (cellIndex, token) => {
             board[cellIndex].setValue(token);
-        }
-
-        const getAvailableCells = () => {
-            return board.reduce((array, cell, index) => {
-                if (!cell.getValue()) array.push(index);
-                return array;
-            }, [])
+            availableCells.splice(availableCells.indexOf(cellIndex), 1); // remove item with the value `cellIndex` not item with the index `cellIndex`
         }
 
         const resetBoard = () => {
-            for (let i = 0; i < board.length; i++) {
-                board[i].setValue(null);
-            }
-        }
+            board.forEach((cell, index) => {
+                cell.setValue("");
+                availableCells[index] = index;
+            })
+        };
 
-        return {
-            getBoard,
-            insertToken,
-            getAvailableCells,
-            resetBoard,
-        }
+        return { getBoard, insertToken, getAvailableCells, resetBoard };
     }
 
     function Cell() {
-        let value = null;
+        let value = "";
 
         const getValue = () => value;
         const setValue = (token) => {
             value = token;
         };
 
-        return {
-            getValue,
-            setValue,
-        }
+        return { getValue, setValue }
     }
 
-    function GameController(Cell, Gameboard, playerOneName="", playerTwoName="") {
-        const gameboard = Gameboard(Cell);
+    function GameController(Cell, BoardController, playerOneName = "", playerTwoName = "") {
+        const boardController = BoardController(Cell);
+        const board = boardController.getBoard();
         const players = [
             { name: (playerOneName || `Player X`), token: "X" },
             { name: (playerTwoName || `Player O`), token: "O" },
@@ -70,9 +65,9 @@ const TicTacToeGame = (function () {
                 [2, 4, 6],
             ]
 
-            const currentPlayerTokens = gameboard.getBoard().reduce((array, cell, index) => {
-                if (cell.getValue() === currentPlayer.token) array.push(index);
-                return array;
+            const currentPlayerTokens = board.reduce((playerTokens, currentCell, index) => {
+                if (currentCell.getValue() === currentPlayer.token) playerTokens.push(index);
+                return playerTokens;
             }, [])
 
             winningPatterns.forEach(pattern => {
@@ -81,7 +76,7 @@ const TicTacToeGame = (function () {
                 }
             })
 
-            if (!gameboard.getAvailableCells().length && !gameStatus) {
+            if (!boardController.getAvailableCells().length && !gameStatus) {
                 gameStatus = `It's a draw!`;
             }
 
@@ -89,17 +84,16 @@ const TicTacToeGame = (function () {
         }
 
         const playTurn = (cellIndex) => {
-            if (gameboard.getBoard()[cellIndex].getValue()) return;
-            gameboard.insertToken(cellIndex, currentPlayer.token);
-            const gameStatus = getGameStatus();
-            if (gameStatus) return;
+            if (board[cellIndex].getValue()) return;
+            boardController.insertToken(cellIndex, currentPlayer.token);
+            if (getGameStatus()) return;
             switchTurns();
         }
 
         const getGameState = () => {
             return {
                 currentPlayer,
-                board: gameboard.getBoard(),
+                board,
                 gameStatus: getGameStatus(),
             }
         }
@@ -107,33 +101,33 @@ const TicTacToeGame = (function () {
         return {
             playTurn,
             getGameState,
-            resetBoard: gameboard.resetBoard,
+            resetBoard: boardController.resetBoard,
         }
     }
 
-    function ScreenController(Cell, Gameboard, GameController) {
+    function ScreenController(Cell, BoardController, GameController) {
         const outputPara = document.getElementById("output-para");
         const boardDiv = document.getElementById("gameboard");
         const resetBtn = document.getElementById("reset-btn");
-        const gameController = GameController(Cell, Gameboard);
+        const gameController = GameController(Cell, BoardController);
 
         const updateScreen = () => {
             const gameState = gameController.getGameState();
             outputPara.textContent = gameState.gameStatus || `${gameState.currentPlayer.name}'s Turn`;
             gameState.board.forEach((cell, index) => {
-                document.querySelector(`#gameboard button[data-index="${index}"]`).textContent = cell.getValue() || "";
+                document.querySelector(`#gameboard button[data-index="${index}"]`).textContent = cell.getValue();
             })
         }
 
         function boardClickHandler(event) {
-            const selectedCellIndex = +event.target.dataset.index;
-            if ((selectedCellIndex >= 0 && selectedCellIndex <= 8) && !gameController.getGameState().gameStatus) { // execute if is a valid cell is clicked & game is still ongoing
-                gameController.playTurn(selectedCellIndex);
+            const selectedCell = event.target;
+            if (selectedCell && !gameController.getGameState().gameStatus) { // execute if it's a valid cell & game is still ongoing
+                gameController.playTurn(selectedCell.dataset.index);
                 updateScreen();
             }
         }
 
-        function resetBtnClickHandler(event) {
+        function resetBtnClickHandler() {
             gameController.resetBoard();
             updateScreen();
         }
@@ -144,5 +138,5 @@ const TicTacToeGame = (function () {
         updateScreen(); // Initial render
     }
 
-    return ScreenController(Cell, Gameboard, GameController);
+    return ScreenController(Cell, BoardController, GameController);
 })();
